@@ -1,0 +1,56 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+
+
+<script type="text/javascript">
+/*
+//模板 ---> 虚拟 DOM 渲染函数
+//vue官网给出的编译模板demo: https://cn.vuejs.org/v2/guide/render-function.html#%E6%A8%A1%E6%9D%BF%E7%BC%96%E8%AF%91
+ */
+
+//-------------------尝试打印DOM div属性-----------------------------
+// var div = document.createElement('div');
+// var str = '';
+// for(var key in div){
+//     str = str + key + '   '
+// }
+// console.log(str)
+
+//------------------DOM对象用JS对象表示------------------------------
+// var element = {
+//   tagName: 'ul', // 节点标签名
+//   props: { // DOM的属性，用一个对象存储键值对
+//     id: 'list'
+//   },
+//   children: [ // 该节点的子节点
+//     {tagName: 'li', props: {class: 'item'}, children: ["Item 1"]},
+//     {tagName: 'li', props: {class: 'item'}, children: ["Item 2"]},
+//     {tagName: 'li', props: {class: 'item'}, children: ["Item 3"]},
+//   ]
+// }
+
+// //上面对应的HTML写法是
+// <ul id='list'>
+//   <li class='item'>Item 1</li>
+//   <li class='item'>Item 2</li>
+//   <li class='item'>Item 3</li>
+// </ul>
+
+//------------------virtual DOM算法实现------------------------------
+//1. 用JS对象模拟DOM树
+function Element (tagName, props, children) {
+  this.tagName = tagName
+  this.props = props
+  this.children = children
+}
+
+module.exports = function (tagName, props, children) {
+  return new Element(tagName, props, children)
+}
+
+
+
+</script>
+</body>
+</html>

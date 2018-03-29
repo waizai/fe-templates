@@ -1,0 +1,162 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+
+
+<script type="text/javascript">
+/*
+// 1. 利用正则表达式，区分出字符串中哪些是模板语法，哪些是正常的HTML标签。
+      在‘<%’和’%>‘之间是普通的JS语句，可以进行逻辑判断和条件循环等操作
+      ‘<%=’和‘%>’之间是JS的表达式
+// 2. 正则表达式抽取
+// 3. 普通的html用自定义的echo函数包裹一下
+*/
+
+// let tpl = `<p>Hello, my name is <%name%>. I\'m <%age%> years old.</p>`;
+// const data = {
+//     name: "test Name",
+//     // age: 9,
+//     profile: { age: 9 }
+// };
+
+//----------------抽取标识片段---------------------------
+
+// var re = /<%([^%>]+)?%>/g;
+// var match = re.exec(tpl);
+// console.log(match)
+
+
+// var re = /<%([^%>]+)?%>/g, match;
+// while(match = re.exec(tpl)) {
+//     console.log(match);
+// }
+
+
+//----------------数据填充与逻辑处理1---------------------------
+
+// const TemplateEngine = function(tpl, data) {
+//     var re = /<%([^%>]+)?%>/g, match;
+//     while(match = re.exec(tpl)) {
+//         tpl = tpl.replace(match[0], data[match[1]])
+//     }
+//     return tpl;
+// }
+
+// const afterTpl = TemplateEngine(tpl, data);
+// console.log(afterTpl);
+
+//replace行不通,对于处理复杂的js语句无能
+
+//----------------数据填充与逻辑处理2---------------------------
+//使用了new Function，通过字符串去创建一个函数的方法去完成这个功能
+
+/*类似
+var fn = new Function("arg", "console.log(arg + 1);");
+fn(2); // 输出 3
+*/
+
+var tpl = `<p>Hello, my name is <%this.name%>. I\'m <%this.profile.age%> years old.</p>`;
+var data = {
+    name: "test Name",
+    profile: { age: 9 }
+}
+
+const TemplateEngine = function(tpl, data) {
+    var re = /<%([^%>]+)?%>/g,
+        //声明一个数组为开头
+        code = `var r=[];\n`,
+        //cursor表示我们正处于模板的哪个位置
+        cursor = 0,
+        match;
+
+    //把字符串插入到code变量中
+    var add = function(line, js) {
+        js? code += `r.push(${line});\n` :
+            code += 'r.push("' + line.replace(/"/g, '\\"') + '");\n';
+            // code += `r.push(${line.replace(/"/g, '\\"')});\n`
+    }
+    //把所有的字符串都push到一个数组中,最后才把它们拼接起来
+    while(match = re.exec(tpl)) {
+        add(tpl.slice(cursor, match.index));
+        add(match[1],true);
+        cursor = match.index + match[0].length;
+    }
+    add(tpl.substr(cursor, tpl.length - cursor));
+    code += 'return r.join("");'; // <-- return the result
+    console.log(code);
+    // return tpl;
+
+    //生成函数且运行它
+    return new Function(code.replace(/[\r\t\n]/g, '')).apply(data);
+}
+打印出函数体
+console.log(TemplateEngine(tpl, data));
+
+
+
+/*
+模板继承
+模板包含
+其余的一些逻辑控制语句，比如 else , elfi , try 等等
+空白控制
+特殊字符转译
+更多没讲到的模板指令
+ */
+
+
+//----------------总结---------------------------
+/*
+//  总结下来整个过程就是：模板 --->  AST ---> 转化函数（AST,DATA）
+*/
+
+//模板
+// <ul>
+//     {{ get (item, idx) in list }}
+//         <li>{{ item }}</li>
+//     {{ teg }}
+// </ul>
+
+
+
+//AST
+// let ast = [
+//     {   // 表示这个数组元素是纯字符串
+//         todo: "pure-string",
+//         val: "<ul>\n"
+//     },
+//     {   // 这个数组元素描述的是一个等价于 for 的循环体
+//         todo: "get",
+//         idxName: "idx",
+//         valName: "item",
+//         listName: "list",
+//         // 注意，body 自身也是一类 ast
+//         body: [
+//             {   // 表示这个数组元素是纯字符串
+//                 todo: "pure-string",
+//                 val: "<li>"
+//             },
+//             {   // 表示这个数组元素代表着一次变量取值 变量名是 item
+//                 todo: "render",
+//                 key: "item"
+//             },
+//             {   // 表示这个数组元素是纯字符串
+//                 todo: "pure-string",
+//                 val: "</li>\n"
+//             },
+//         ]
+//     },
+//     {   // 表示这个数组元素是纯字符串
+//         todo: "pure-string",
+//         val: "</ul>"
+//     }
+// ]
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
